@@ -7,6 +7,7 @@ import time
 from PIL import Image
 
 default_watch_dir = "/home/bob/Dropbox/Camera Uploads"
+robert_watch_dir = "/mnt/media/nextcloud/brayrobert201/files/InstantUpload/Camera"
 default_destination_dir = "/mnt/media/Syncthing/Camera"
 
 image_extensions = [".jpg", ".jpeg"]
@@ -47,7 +48,7 @@ def move_photos(watch_dir, destination_dir):
             if not os.path.exists(full_destination_dir):
                 os.makedirs(full_destination_dir)
             if not os.path.exists(full_destination):
-                shutil.move(full_path, full_destination)
+                shutil.copy(full_path, full_destination)
 
 def move_videos(watch_dir, destination_dir):
     file_names = os.listdir(watch_dir)
@@ -70,8 +71,11 @@ def move_videos(watch_dir, destination_dir):
             if not os.path.exists(full_destination_dir):
                 os.makedirs(full_destination_dir)
             if not os.path.exists(full_destination):
-                shutil.move(full_path, full_destination)
+                shutil.copy(full_path, full_destination)
 
 purge_unwanted(default_watch_dir)
+purge_unwanted(robert_watch_dir)
 move_photos(default_watch_dir, default_destination_dir)
+move_photos(robert_watch_dir, default_destination_dir)
 move_videos(default_watch_dir, default_destination_dir)
+move_videos(robert_watch_dir, default_destination_dir)
