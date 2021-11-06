@@ -4,14 +4,16 @@ import shutil
 import sys
 import calendar
 import time
+from PIL import UnidentifiedImageError
 from PIL import Image
 
 default_watch_dir = "/home/bob/Dropbox/Camera Uploads"
 robert_watch_dir = "/mnt/media/nextcloud/brayrobert201/files/InstantUpload/Camera"
+meg_watch_dir = "/mnt/media/nextcloud/meg/files/Photos"
 default_destination_dir = "/mnt/media/Syncthing/Camera"
 
 image_extensions = [".jpg", ".jpeg"]
-video_extensions = [".mp4"]
+video_extensions = [".mp4", ".mov"]
 banned_extensions = [".png"]
 
 
@@ -20,7 +22,7 @@ def purge_unwanted(watch_dir):
   for file_name in file_names:
       file_ext = os.path.splitext(file_name)[1]
       full_path = f'{watch_dir}/{file_name}'
-      if (file_ext in banned_extensions):
+      if file_ext.lower() in banned_extensions:
           os.remove(full_path)
 
 def move_photos(watch_dir, destination_dir):
@@ -28,8 +30,12 @@ def move_photos(watch_dir, destination_dir):
     for file_name in file_names:
         file_ext = os.path.splitext(file_name)[1]
         full_path = f'{watch_dir}/{file_name}'
-        if (file_ext in image_extensions):
-            image_data = Image.open(full_path)
+        if file_ext.lower() in image_extensions:
+            try:
+                image_data = Image.open(full_path)
+            except UnidentifiedImageError:
+                print(f'Cant identify {full_path}')
+                pass
             try:
                 date_taken = image_data._getexif()[36867]
             except KeyError:
@@ -55,7 +61,7 @@ def move_videos(watch_dir, destination_dir):
     for file_name in file_names:
         file_ext = os.path.splitext(file_name)[1]
         full_path = f'{watch_dir}/{file_name}'
-        if (file_ext in video_extensions):
+        if file_ext.lower() in video_extensions:
             date_taken = os.stat(full_path).st_mtime
             date_taken = time.strftime('%Y-%m-%d', time.localtime(date_taken))
             date_taken = date_taken.split("-")
@@ -76,6 +82,8 @@ def move_videos(watch_dir, destination_dir):
 purge_unwanted(default_watch_dir)
 purge_unwanted(robert_watch_dir)
 move_photos(default_watch_dir, default_destination_dir)
+move_photos(meg_watch_dir, default_destination_dir)
 move_photos(robert_watch_dir, default_destination_dir)
 move_videos(default_watch_dir, default_destination_dir)
+move_videos(meg_watch_dir, default_destination_dir)
 move_videos(robert_watch_dir, default_destination_dir)
