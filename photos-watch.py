@@ -1,8 +1,7 @@
-#!/usr/bin/python3
+#!/home/bob/.venv/movephoto/bin/python3 
 
 import os
 import shutil
-import sys
 import calendar
 import time
 from PIL import UnidentifiedImageError
@@ -11,13 +10,12 @@ import time
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
-default_watch_dir = "/home/bob/Dropbox/Camera Uploads"
-robert_watch_dir = "/mnt/media/nextcloud/brayrobert201/files/InstantUpload/Camera"
-meg_watch_dir = "/mnt/media/nextcloud/meg/files/Photos"
-default_destination_dir = "/mnt/media/Syncthing/Camera"
+default_watch_dir = "/mnt/c/Users/bob/OneDrive/Pictures/Camera Roll"
+robert_watch_dir = "/mnt/c/Users/bob/OneDrive/Pictures/Camera Roll"
+# meg_watch_dir = "/mnt/media/nextcloud/meg/files/Photos"
+default_destination_dir = "/mnt/c/Users/bob/OneDrive/Camera"
 
-directories = [robert_watch_dir, meg_watch_dir]
-#directories = ['/tmp', '/home/bob']
+directories = [robert_watch_dir]
 
 observers = []
 
