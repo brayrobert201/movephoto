@@ -24,10 +24,8 @@ video_extensions = [".mp4", ".mov"]
 banned_extensions = [".png"]
 
 class Watcher:
-
     def __init__(self):
         self.observer = Observer()
-
     def run(self):
         event_handler = Handler()
         #self.observer.schedule(event_handler, self.DIRECTORY_TO_WATCH, recursive=True)
