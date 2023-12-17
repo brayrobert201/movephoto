@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"time"
 	"io/ioutil"
 	"strings"
+	"log"
+	"image/jpeg"
 )
 
 var (
@@ -14,7 +15,7 @@ var (
 	robertWatchDir         = "/mnt/c/Users/bob/OneDrive/Pictures/Camera Roll"
 	defaultDestinationDir  = "/mnt/c/Users/bob/OneDrive/Camera"
 	imageExtensions        = []string{".jpg", ".jpeg"}
-	videoExtensions        = []string{".mp4", ".mov"}
+	videoExtensions        = []string{".mp4", ".mov", ".avi", ".flv", ".wmv", ".mkv"}
 	bannedExtensions       = []string{".png"}
 )
 
