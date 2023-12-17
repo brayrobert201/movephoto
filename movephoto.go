@@ -5,6 +5,8 @@ import (
 	"os"
 	"path/filepath"
 	"time"
+	"io/ioutil"
+	"strings"
 )
 
 var (
@@ -21,11 +23,6 @@ func main() {
 	move_photos(robertWatchDir, defaultDestinationDir, imageExtensions)
 	move_videos(robertWatchDir, defaultDestinationDir)
 }
-import (
-	"io/ioutil"
-	"os"
-	"strings"
-)
 
 func purge_unwanted(watch_dir string, banned_extensions []string) {
 	files, err := ioutil.ReadDir(watch_dir)
@@ -41,12 +38,6 @@ func purge_unwanted(watch_dir string, banned_extensions []string) {
 		}
 	}
 }
-import (
-	"image/jpeg"
-	"os"
-	"path/filepath"
-	"time"
-)
 
 func move_photos(watch_dir string, destination_dir string, image_extensions []string) {
 	files, err := ioutil.ReadDir(watch_dir)
