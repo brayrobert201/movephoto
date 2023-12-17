@@ -28,8 +28,6 @@ func main() {
 func purge_unwanted(watch_dir string, banned_extensions []string) error {
     // function body
     return nil
-    // function body
-    return nil
 	files, err := ioutil.ReadDir(watch_dir)
 	if err != nil {
 		return err
@@ -45,8 +43,6 @@ func purge_unwanted(watch_dir string, banned_extensions []string) error {
 }
 
 func move_photos(watch_dir string, destination_dir string, image_extensions []string) error {
-    // function body
-    return nil
     // function body
     return nil
 	files, err := ioutil.ReadDir(watch_dir)
@@ -90,8 +86,6 @@ func move_photos(watch_dir string, destination_dir string, image_extensions []st
 	}
 }
 func move_videos(watch_dir string, destination_dir string) error {
-    // function body
-    return nil
     // function body
     return nil
 	files, err := ioutil.ReadDir(watch_dir)
