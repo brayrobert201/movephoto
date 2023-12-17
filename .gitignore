@@ -1,1 +1,15 @@
 .aider*
+# Compiled Go binaries
+*
+!*.go
+!*.mod
+!*.sum
+
+# Go vendor directory
+/vendor/
+
+# Go test files
+*.test
+
+# Go coverage files
+*.out
