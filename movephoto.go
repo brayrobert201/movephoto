@@ -26,6 +26,8 @@ func main() {
 }
 
 func purge_unwanted(watch_dir string, banned_extensions []string) error {
+    // function body
+    return nil
 	files, err := ioutil.ReadDir(watch_dir)
 	if err != nil {
 		return err
@@ -41,6 +43,8 @@ func purge_unwanted(watch_dir string, banned_extensions []string) error {
 }
 
 func move_photos(watch_dir string, destination_dir string, image_extensions []string) error {
+    // function body
+    return nil
 	files, err := ioutil.ReadDir(watch_dir)
 	if err != nil {
 		return err
@@ -57,7 +61,7 @@ func move_photos(watch_dir string, destination_dir string, image_extensions []st
 				if err != nil {
 					log.Fatal(err)
 				}
-				date_taken := img.ModTime()
+				date_taken := imgFile.ModTime()
 				year_taken, month_taken, day_taken := date_taken.Date()
 				month_name := month_taken.String()
 				full_destination_dir := filepath.Join(
@@ -78,13 +82,15 @@ func move_photos(watch_dir string, destination_dir string, image_extensions []st
 	}
 }
 func move_videos(watch_dir string, destination_dir string) error {
+    // function body
+    return nil
 	files, err := ioutil.ReadDir(watch_dir)
 	if err != nil {
 		return err
 	}
 
 	for _, file := range files {
-		for _, ext := range video_extensions {
+		for _, ext := range videoExtensions {
 			if strings.ToLower(filepath.Ext(file.Name())) == ext {
 				info, err := os.Stat(filepath.Join(watch_dir, file.Name()))
 				if err != nil {
