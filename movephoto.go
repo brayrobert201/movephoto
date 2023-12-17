@@ -61,7 +61,7 @@ func move_photos(watch_dir string, destination_dir string, image_extensions []st
 				if err != nil {
 					log.Fatal(err)
 				}
-				_, err := jpeg.DecodeConfig(imgFile)
+				_, err = jpeg.DecodeConfig(imgFile)
 				if err != nil {
 					log.Fatal(err)
 				}
