@@ -26,6 +26,7 @@ type Config struct {
 	ImageExtensions       []string `yaml:"imageExtensions"`
 	VideoExtensions       []string `yaml:"videoExtensions"`
 	BannedExtensions      []string `yaml:"bannedExtensions"`
+	LockFilePath          string   `yaml:"lockFilePath"`
 }
 
 func loadConfig() Config {
@@ -51,6 +52,23 @@ func main() {
 		}
 	}
 	config := loadConfig()
+
+	for {
+		if _, err := os.Stat(config.LockFilePath); os.IsNotExist(err) {
+			break
+		} else {
+			info, _ := os.Stat(config.LockFilePath)
+			if time.Since(info.ModTime()).Hours() > 24 {
+				os.Remove(config.LockFilePath)
+				break
+			}
+			time.Sleep(30 * time.Second)
+		}
+	}
+
+	os.Create(config.LockFilePath)
+	defer os.Remove(config.LockFilePath)
+
 	purge_unwanted(config.RobertWatchDir, config.BannedExtensions)
 	move_photos(config.RobertWatchDir, config.DefaultDestinationDir, config.ImageExtensions)
 	move_videos(config.RobertWatchDir, config.DefaultDestinationDir)
