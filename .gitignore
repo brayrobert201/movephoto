@@ -4,6 +4,7 @@
 !*.go
 !*.mod
 !*.sum
+!installer.sh
 
 # Example file
 !*.example
