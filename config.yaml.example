@@ -1,12 +1,31 @@
+# The default directory to watch for new files
 defaultWatchDir: "/mnt/c/Users/bob/OneDrive/Pictures/Camera Roll"
-additionalWatchDirs: ["/mnt/c/Users/bob/OneDrive/Pictures/Camera Roll", "/mnt/c/Users/anotherUser/OneDrive/Pictures/Camera Roll"]
+
+# Additional directories to watch for new files
+additionalWatchDirs: 
+  - "/mnt/c/Users/bob/OneDrive/Pictures/Camera Roll"
+  - "/mnt/c/Users/anotherUser/OneDrive/Pictures/Camera Roll"
+
+# The default directory where the files should be moved
 defaultDestinationDir: "/mnt/c/Users/bob/OneDrive/Camera"
-imageExtensions: [".jpg", ".jpeg"]
-videoExtensions: [".mp4", ".mov", ".avi", ".flv", ".wmv", ".mkv"]
-bannedExtensions: [".png"]
+
+# The extensions of the image files to be moved
+imageExtensions: 
+  - ".jpg"
+  - ".jpeg"
+
+# The extensions of the video files to be moved
+videoExtensions: 
+  - ".mp4"
+  - ".mov"
+  - ".avi"
+  - ".flv"
+  - ".wmv"
+  - ".mkv"
+
+# The extensions of the files that should not be moved
+bannedExtensions: 
+  - ".png"
+
+# The path to the lock file
 lockFilePath: "/tmp/movephoto.lock"
-defaultWatchDir: "/mnt/c/Users/bob/OneDrive/Pictures/Camera Roll"
-defaultDestinationDir: "/mnt/c/Users/bob/OneDrive/Camera"
-imageExtensions: [".jpg", ".jpeg"]
-videoExtensions: [".mp4", ".mov", ".avi", ".flv", ".wmv", ".mkv"]
-bannedExtensions: [".png"]
