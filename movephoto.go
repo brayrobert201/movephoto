@@ -37,6 +37,7 @@ func loadConfig() Config {
 }
 
 func main() {
+	fmt.Println("Starting movephoto...")
 	if _, err := os.Stat("config.yaml"); os.IsNotExist(err) {
 		fmt.Println("config.yaml does not exist. Would you like to copy config.yaml.example to config.yaml? (y/n)")
 		reader := bufio.NewReader(os.Stdin)
@@ -56,6 +57,7 @@ func main() {
 				os.Remove(config.LockFilePath)
 				break
 			}
+			fmt.Println("Waiting for lock file to be removed...")
 			time.Sleep(30 * time.Second)
 		}
 	}
@@ -63,6 +65,7 @@ func main() {
 	os.Create(config.LockFilePath)
 	defer os.Remove(config.LockFilePath)
 
+	fmt.Println("Starting to move photos and videos...")
 	for _, watchDir := range config.AdditionalWatchDirs {
 		purge_unwanted(watchDir, config.BannedExtensions)
 		move_photos(watchDir, config.DefaultDestinationDir, config.ImageExtensions)
