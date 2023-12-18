@@ -9,6 +9,8 @@
 !*.example
 # Python scripts
 !*.py
+# Readme file
+!readme.md
 #
 # Requirements files
 !requirements.*
