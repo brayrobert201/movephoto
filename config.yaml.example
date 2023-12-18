@@ -2,7 +2,8 @@
 defaultWatchDir: "/mnt/c/Users/bob/OneDrive/Pictures/Camera Roll"
 
 # Additional directories to watch for new files
-additionalWatchDirs: []
+additionalWatchDirs:
+  - "/mnt/c/Users/bob/OneDrive/Pictures/Camera Roll"
 
 # The default directory where the files should be moved
 defaultDestinationDir: "/mnt/c/Users/bob/OneDrive/Camera"
