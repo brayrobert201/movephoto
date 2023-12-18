@@ -182,7 +182,7 @@ func move_photos(watch_dir string, destination_dir string, image_extensions []st
 		return filepath.Join(
 			destination_dir,
 			fmt.Sprintf("%d", year_taken),
-			fmt.Sprintf("%d - %s", month_taken, month_name),
+			fmt.Sprintf("%02d - %s", month_taken, month_name),
 			fmt.Sprintf("%04d-%02d-%02d", year_taken, int(month_taken), day_taken),
 		)
 	})
@@ -201,7 +201,7 @@ func move_videos(watch_dir string, destination_dir string, video_extensions []st
 			destination_dir,
 			fmt.Sprintf("%d", year_taken),
 			fmt.Sprintf("%d - %s", month_taken, month_name),
-			fmt.Sprintf("%d-%d-%d", year_taken, month_taken, day_taken),
+			fmt.Sprintf("%d-%02d-%d", year_taken, month_taken, day_taken),
 		)
 	})
 }
