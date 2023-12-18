@@ -57,7 +57,6 @@ func loadConfig() Config { // Similar to Python's def keyword
 }
 
 var (
-	watch         = flag.Bool("watch", false, "Watch for changes in the watch directories")
 	pollingInterval = flag.Int("polling-interval", 30, "Polling interval in seconds for checking new files in the watch directories")
 	debug         = flag.Bool("debug", false, "Enable debug output")
 )
@@ -65,25 +64,30 @@ var (
 func main() {
 	flag.Parse() // Parse the command-line flags
 
-	fmt.Printf("[%s] Starting movephoto...\n", currentTime())
+	if *debug {
+		log.Printf("[%s] Starting movephoto...\n", currentTime())
+	}
 	config := loadConfig()
 
-	if *watch {
-		fmt.Printf("[%s] Watching for changes in the watch directories...\n", currentTime())
-		for _, watchDir := range config.WatchDirs {
-			if isNetworkPath(watchDir) {
-				fmt.Printf("[%s] Using polling for network path: %s\n", currentTime(), watchDir)
-				go pollDirectory(watchDir, config)
-			} else {
-				fmt.Printf("[%s] Using fsnotify for path: %s\n", currentTime(), watchDir)
-				go watchDirectory(watchDir, config)
-			}
-		}
+	processFiles(config)
 
-		// Keep the main goroutine alive
-		select {}
-	} else {
-		fmt.Printf("[%s] Performing a single scan of the target directories...\n", currentTime())
+	ticker := time.NewTicker(time.Duration(*pollingInterval) * time.Second)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		if *debug {
+			log.Printf("[%s] Polling for new files...\n", currentTime())
+		}
+		processFiles(config)
+	}
+}
+
+func processFiles(config Config) {
+	for _, watchDir := range config.WatchDirs {
+		purge_unwanted(watchDir, config.BannedExtensions)
+		move_photos(watchDir, config.DefaultDestinationDir, config.ImageExtensions)
+		move_videos(watchDir, config.DefaultDestinationDir, config.VideoExtensions)
+	}
 
 	for {
 		if _, err := os.Stat(config.LockFilePath); os.IsNotExist(err) {
@@ -199,69 +203,6 @@ func move_videos(watch_dir string, destination_dir string, video_extensions []st
 			fmt.Sprintf("%d-%d-%d", year_taken, month_taken, day_taken),
 		)
 	})
-}
-// watchDirectory sets up a watcher on a directory and processes files as they are created.
-func watchDirectory(watchDir string, config Config) {
-	if *debug {
-		log.Printf("[%s] Debug mode enabled\n", currentTime())
-	}
-	log.Printf("[%s] Setting up watcher on directory: %s\n", currentTime(), watchDir)
-	watcher, err := fsnotify.NewWatcher()
-	if err != nil {
-		log.Fatalf("[%s] Failed to create watcher: %v\n", currentTime(), err)
-	}
-	defer watcher.Close()
-
-	done := make(chan bool)
-	go func() {
-		for {
-			select {
-			case event, ok := <-watcher.Events:
-				if !ok {
-					log.Printf("[%s] Watcher event channel closed\n", currentTime())
-					return
-				}
-				if *debug {
-					log.Printf("[%s] Received watcher event: %v\n", currentTime(), event)
-				}
-				if event.Op&fsnotify.Create == fsnotify.Create {
-					filePath := event.Name
-					fileInfo, err := os.Stat(filePath)
-					if err != nil {
-						log.Printf("[%s] Error getting file info: %v\n", currentTime(), err)
-						continue
-					}
-					if fileInfo.IsDir() {
-						log.Printf("[%s] Directory created: %s, skipping\n", currentTime(), filePath)
-						continue // Skip directories
-					}
-					ext := strings.ToLower(filepath.Ext(filePath))
-					if contains(config.ImageExtensions, ext) {
-						move_photos(watchDir, config.DefaultDestinationDir, config.ImageExtensions)
-					} else if contains(config.VideoExtensions, ext) {
-						move_videos(watchDir, config.DefaultDestinationDir, config.VideoExtensions)
-					}
-				}
-			case err, ok := <-watcher.Errors:
-				if !ok {
-					log.Printf("[%s] Watcher error channel closed\n", currentTime())
-					return
-				}
-				if *debug {
-					log.Printf("[%s] Watcher error: %v\n", currentTime(), err)
-				}
-			}
-		}
-	}()
-
-	err = watcher.Add(watchDir)
-	if err != nil {
-		log.Fatalf("[%s] Failed to add directory to watcher: %v\n", currentTime(), err)
-	}
-	if *debug {
-		log.Printf("[%s] Watcher added for directory: %s\n", currentTime(), watchDir)
-	}
-	<-done
 }
 
 // contains checks if a slice contains a specific string.
