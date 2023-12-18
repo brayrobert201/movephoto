@@ -16,12 +16,21 @@ The `config.yaml` file has the following fields:
 - `bannedExtensions`: An array of file extensions to ignore and delete.
 - `lockFilePath`: The path to the lock file used to prevent multiple instances of the script from running at the same time.
 
+## How the Script Works
+
+The script uses the metadata of the photo and video files to decide where to move them. Specifically, it uses the modification date of the files. It organizes the files into directories based on the year, month, and day the files were last modified.
+
 ## Setting up a Cron Job
 
-To run this script every hour, you can set up a cron job. Open your crontab file with the command `crontab -e` and add the following line:
+To run this script every hour, you can set up a cron job. Here's how:
+
+1. Open your crontab file with the command `crontab -e`.
+2. Add the following line to the file:
 
 ```
 0 * * * * /path/to/script/movephoto.go
 ```
 
 Replace `/path/to/script/movephoto.go` with the actual path to the `movephoto.go` script. This will run the script at the start of every hour.
+
+Remember to save and close the file after making these changes.
