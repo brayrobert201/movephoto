@@ -2,21 +2,21 @@ package main
 
 import (
 	"fmt"
+	"image/jpeg"
+	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
-	"io/ioutil"
 	"strings"
-	"log"
-	"image/jpeg"
 )
 
 var (
-	defaultWatchDir        = "/mnt/c/Users/bob/OneDrive/Pictures/Camera Roll"
-	robertWatchDir         = "/mnt/c/Users/bob/OneDrive/Pictures/Camera Roll"
-	defaultDestinationDir  = "/mnt/c/Users/bob/OneDrive/Camera"
-	imageExtensions        = []string{".jpg", ".jpeg"}
-	videoExtensions        = []string{".mp4", ".mov", ".avi", ".flv", ".wmv", ".mkv"}
-	bannedExtensions       = []string{".png"}
+	defaultWatchDir       = "/mnt/c/Users/bob/OneDrive/Pictures/Camera Roll"
+	robertWatchDir        = "/mnt/c/Users/bob/OneDrive/Pictures/Camera Roll"
+	defaultDestinationDir = "/mnt/c/Users/bob/OneDrive/Camera"
+	imageExtensions       = []string{".jpg", ".jpeg"}
+	videoExtensions       = []string{".mp4", ".mov", ".avi", ".flv", ".wmv", ".mkv"}
+	bannedExtensions      = []string{".png"}
 )
 
 func main() {
@@ -26,8 +26,6 @@ func main() {
 }
 
 func purge_unwanted(watch_dir string, banned_extensions []string) error {
-    // function body
-    return nil
 	files, err := ioutil.ReadDir(watch_dir)
 	if err != nil {
 		return err
@@ -40,11 +38,10 @@ func purge_unwanted(watch_dir string, banned_extensions []string) error {
 			}
 		}
 	}
+	return nil
 }
 
 func move_photos(watch_dir string, destination_dir string, image_extensions []string) error {
-    // function body
-    return nil
 	files, err := ioutil.ReadDir(watch_dir)
 	if err != nil {
 		return err
@@ -63,14 +60,14 @@ func move_photos(watch_dir string, destination_dir string, image_extensions []st
 				}
 				info, err := imgFile.Stat()
 				if err != nil {
-				    log.Fatal(err)
+					log.Fatal(err)
 				}
 				date_taken := info.ModTime()
 				year_taken, month_taken, day_taken := date_taken.Date()
 				month_name := month_taken.String()
 				full_destination_dir := filepath.Join(
-					destination_dir, 
-					fmt.Sprintf("%d", year_taken), 
+					destination_dir,
+					fmt.Sprintf("%d", year_taken),
 					fmt.Sprintf("%d - %s", month_taken, month_name),
 					fmt.Sprintf("%d-%d-%d", year_taken, month_taken, day_taken),
 				)
@@ -84,10 +81,10 @@ func move_photos(watch_dir string, destination_dir string, image_extensions []st
 			}
 		}
 	}
+	return nil
 }
+
 func move_videos(watch_dir string, destination_dir string) error {
-    // function body
-    return nil
 	files, err := ioutil.ReadDir(watch_dir)
 	if err != nil {
 		return err
@@ -104,8 +101,8 @@ func move_videos(watch_dir string, destination_dir string) error {
 				year_taken, month_taken, day_taken := date_taken.Date()
 				month_name := month_taken.String()
 				full_destination_dir := filepath.Join(
-					destination_dir, 
-					fmt.Sprintf("%d", year_taken), 
+					destination_dir,
+					fmt.Sprintf("%d", year_taken),
 					fmt.Sprintf("%d - %s", month_taken, month_name),
 					fmt.Sprintf("%d-%d-%d", year_taken, month_taken, day_taken),
 				)
@@ -119,4 +116,6 @@ func move_videos(watch_dir string, destination_dir string) error {
 			}
 		}
 	}
+	return nil
+
 }

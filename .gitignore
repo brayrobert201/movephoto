@@ -13,3 +13,6 @@
 
 # Go coverage files
 *.out
+
+# Error files noted for aider diagnosis
+errors.txt
