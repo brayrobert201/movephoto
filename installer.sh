@@ -36,7 +36,7 @@ sudo systemctl enable movephoto.service
 sudo systemctl start movephoto.service
 
 # Copy the movephoto executable to /usr/local/bin/
-sudo cp /path/to/movephoto /usr/local/bin/movephoto
+sudo cp ./movephoto /usr/local/bin/movephoto
 sudo chmod +x /usr/local/bin/movephoto
 
 # Rest of your existing installer script goes here...
