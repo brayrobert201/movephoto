@@ -57,27 +57,37 @@ func loadConfig() Config { // Similar to Python's def keyword
 
 var (
 	pollingInterval = flag.Int("polling-interval", 30, "Polling interval in seconds for checking new files in the watch directories")
-	debug         = flag.Bool("debug", false, "Enable debug output")
+	debug           = flag.Bool("debug", false, "Enable debug output")
+	watch           = flag.Bool("watch", false, "Enable regular scanning of the source directories")
 )
 
 func main() {
 	flag.Parse() // Parse the command-line flags
 
 	if *debug {
-		log.Printf("[%s] Starting movephoto...\n", currentTime())
+		log.Printf("[%s] Debug mode enabled\n", currentTime())
 	}
+
 	config := loadConfig()
 
-	processFiles(config)
-
-	ticker := time.NewTicker(time.Duration(*pollingInterval) * time.Second)
-	defer ticker.Stop()
-
-	for range ticker.C {
+	if !*watch {
 		if *debug {
-			log.Printf("[%s] Polling for new files...\n", currentTime())
+			log.Printf("[%s] Performing a single scan...\n", currentTime())
 		}
 		processFiles(config)
+	} else {
+		if *debug {
+			log.Printf("[%s] Starting regular scanning of source directories...\n", currentTime())
+		}
+		ticker := time.NewTicker(time.Duration(*pollingInterval) * time.Second)
+		defer ticker.Stop()
+
+		for range ticker.C {
+			if *debug {
+				log.Printf("[%s] Polling for new files...\n", currentTime())
+			}
+			processFiles(config)
+		}
 	}
 }
 
