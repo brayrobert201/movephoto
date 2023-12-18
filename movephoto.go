@@ -11,7 +11,21 @@ import (
 )
 
 
+import (
+	"os"
+	"fmt"
+	"bufio"
+)
+
 func main() {
+	if _, err := os.Stat("config.yaml"); os.IsNotExist(err) {
+		fmt.Println("config.yaml does not exist. Would you like to copy config.yaml.example to config.yaml? (y/n)")
+		reader := bufio.NewReader(os.Stdin)
+		response, _ := reader.ReadString('\n')
+		if response == "y\n" {
+			os.Link("config.yaml.example", "config.yaml")
+		}
+	}
 	purge_unwanted(robertWatchDir, bannedExtensions)
 	move_photos(robertWatchDir, defaultDestinationDir, imageExtensions)
 	move_videos(robertWatchDir, defaultDestinationDir)
