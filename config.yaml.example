@@ -4,3 +4,9 @@ defaultDestinationDir: "/mnt/c/Users/bob/OneDrive/Camera"
 imageExtensions: [".jpg", ".jpeg"]
 videoExtensions: [".mp4", ".mov", ".avi", ".flv", ".wmv", ".mkv"]
 bannedExtensions: [".png"]
+defaultWatchDir: "/mnt/c/Users/bob/OneDrive/Pictures/Camera Roll"
+robertWatchDir: "/mnt/c/Users/bob/OneDrive/Pictures/Camera Roll"
+defaultDestinationDir: "/mnt/c/Users/bob/OneDrive/Camera"
+imageExtensions: [".jpg", ".jpeg"]
+videoExtensions: [".mp4", ".mov", ".avi", ".flv", ".wmv", ".mkv"]
+bannedExtensions: [".png"]

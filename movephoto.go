@@ -10,14 +10,6 @@ import (
 	"strings"
 )
 
-var (
-	defaultWatchDir       = "/mnt/c/Users/bob/OneDrive/Pictures/Camera Roll"
-	robertWatchDir        = "/mnt/c/Users/bob/OneDrive/Pictures/Camera Roll"
-	defaultDestinationDir = "/mnt/c/Users/bob/OneDrive/Camera"
-	imageExtensions       = []string{".jpg", ".jpeg"}
-	videoExtensions       = []string{".mp4", ".mov", ".avi", ".flv", ".wmv", ".mkv"}
-	bannedExtensions      = []string{".png"}
-)
 
 func main() {
 	purge_unwanted(robertWatchDir, bannedExtensions)
