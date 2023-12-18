@@ -18,8 +18,8 @@ After=network.target
 ExecStart=/usr/local/bin/movephoto --watch
 Restart=always
 RestartSec=5
-StandardOutput=journal
-StandardError=journal
+StandardOutput=syslog
+StandardError=syslog
 SyslogIdentifier=movephoto
 
 [Install]
@@ -35,8 +35,9 @@ sudo systemctl enable movephoto.service
 # Start the movephoto service
 sudo systemctl start movephoto.service
 
-# Copy the movephoto executable to /usr/local/bin/
+# Copy the movephoto executable and config.yaml.example to /usr/local/bin/
 sudo cp ./movephoto /usr/local/bin/movephoto
+sudo cp ./config.yaml.example /usr/local/bin/config.yaml.example
 sudo chmod +x /usr/local/bin/movephoto
 
 # Rest of your existing installer script goes here...
