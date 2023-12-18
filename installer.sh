@@ -18,8 +18,8 @@ After=network.target
 ExecStart=/usr/local/bin/movephoto --watch
 Restart=always
 RestartSec=5
-StandardOutput=syslog
-StandardError=syslog
+StandardOutput=journal
+StandardError=journal
 SyslogIdentifier=movephoto
 
 [Install]
