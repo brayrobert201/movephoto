@@ -56,7 +56,10 @@ func loadConfig() Config { // Similar to Python's def keyword
 	return config // Similar to Python's return statement
 }
 
-var watch = flag.Bool("watch", false, "Watch for changes in the watch directories")
+var (
+	watch         = flag.Bool("watch", false, "Watch for changes in the watch directories")
+	pollingInterval = flag.Int("polling-interval", 30, "Polling interval in seconds for checking new files in the watch directories")
+)
 
 func main() {
 	flag.Parse() // Parse the command-line flags
@@ -66,11 +69,15 @@ func main() {
 
 	if *watch {
 		fmt.Println("Watching for changes in the watch directories...")
-		go func() {
-			for _, watchDir := range config.WatchDirs {
+		for _, watchDir := range config.WatchDirs {
+			if isNetworkPath(watchDir) {
+				fmt.Printf("Using polling for network path: %s\n", watchDir)
+				go pollDirectory(watchDir, config)
+			} else {
+				fmt.Printf("Using fsnotify for path: %s\n", watchDir)
 				go watchDirectory(watchDir, config)
 			}
-		}()
+		}
 
 		// Keep the main goroutine alive
 		select {}
@@ -243,4 +250,19 @@ func contains(slice []string, item string) bool {
 		}
 	}
 	return false
+}
+// pollDirectory periodically checks the directory for new files and processes them.
+func pollDirectory(watchDir string, config Config) {
+	ticker := time.NewTicker(time.Duration(*pollingInterval) * time.Second)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		fmt.Println("Polling for new files...")
+		move_photos(watchDir, config.DefaultDestinationDir, config.ImageExtensions)
+		move_videos(watchDir, config.DefaultDestinationDir, config.VideoExtensions)
+	}
+}
+// isNetworkPath checks if the given path is a network path.
+func isNetworkPath(path string) bool {
+	return strings.HasPrefix(path, "//") || strings.HasPrefix(path, `\\`)
 }
