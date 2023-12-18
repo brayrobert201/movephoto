@@ -1,49 +1,58 @@
 package main
 
+// Importing packages in Go is similar to Python's import statements.
+// For example, "fmt" is similar to Python's built-in "print" function.
 import (
-	"fmt"
-	"image/jpeg"
-	"io/ioutil"
-	"log"
-	"os"
-	"path/filepath"
-	"strings"
-	"time"
-	"bufio"
-	"gopkg.in/yaml.v2"
+	"fmt" // Similar to Python's print function
+	"image/jpeg" // Used for handling JPEG images
+	"io/ioutil" // Provides I/O utility functions
+	"log" // Used for logging
+	"os" // Provides a platform-independent interface to operating system functionality
+	"path/filepath" // Provides utility functions for manipulating filename paths
+	"strings" // Provides string manipulation functions
+	"time" // Provides functionality for measuring and displaying time
+	"bufio" // Used for buffered I/O
+	"gopkg.in/yaml.v2" // Used for handling YAML files
 )
 
+// In Go, a struct is a collection of fields, similar to a class in Python.
+// Here, Config is a struct that holds configuration data.
 type Config struct {
-	DefaultWatchDir       string   `yaml:"defaultWatchDir"`
-	AdditionalWatchDirs   []string `yaml:"additionalWatchDirs"`
-	DefaultDestinationDir string   `yaml:"defaultDestinationDir"`
-	ImageExtensions       []string `yaml:"imageExtensions"`
-	VideoExtensions       []string `yaml:"videoExtensions"`
-	BannedExtensions      []string `yaml:"bannedExtensions"`
-	LockFilePath          string   `yaml:"lockFilePath"`
+	DefaultWatchDir       string   `yaml:"defaultWatchDir"` // Similar to Python's class attribute
+	AdditionalWatchDirs   []string `yaml:"additionalWatchDirs"` // Similar to Python's list
+	DefaultDestinationDir string   `yaml:"defaultDestinationDir"` // Similar to Python's class attribute
+	ImageExtensions       []string `yaml:"imageExtensions"` // Similar to Python's list
+	VideoExtensions       []string `yaml:"videoExtensions"` // Similar to Python's list
+	BannedExtensions      []string `yaml:"bannedExtensions"` // Similar to Python's list
+	LockFilePath          string   `yaml:"lockFilePath"` // Similar to Python's class attribute
 }
 
-func loadConfig() Config {
-	if _, err := os.Stat("config.yaml"); os.IsNotExist(err) {
+// In Go, a function is defined using the "func" keyword, similar to Python's "def" keyword.
+// Here, loadConfig is a function that loads the configuration data from a YAML file.
+func loadConfig() Config { // Similar to Python's def keyword
+	// The if statement in Go is similar to Python's if statement.
+	if _, err := os.Stat("config.yaml"); os.IsNotExist(err) { // Similar to Python's if statement
 		fmt.Println("config.yaml does not exist. Copying config.yaml.example to config.yaml...")
-		err := os.Link("config.yaml.example", "config.yaml")
-		if err != nil {
-			log.Fatalf("error: %v", err)
+		// Error handling in Go is done using if statements, similar to Python's try-except blocks.
+		err := os.Link("config.yaml.example", "config.yaml") // Similar to Python's os.link function
+		if err != nil { // Similar to Python's if statement
+			log.Fatalf("error: %v", err) // Similar to Python's print function
 		}
 		fmt.Println("config.yaml created. Please edit it and run the program again.")
-		os.Exit(0)
+		os.Exit(0) // Similar to Python's sys.exit function
 	}
 
-	config := Config{}
-	data, err := ioutil.ReadFile("config.yaml")
-	if err != nil {
-		log.Fatalf("error: %v", err)
+	// The := operator in Go is a shorthand for declaring and initializing a variable, similar to Python's = operator.
+	config := Config{} // Similar to Python's class instantiation
+	data, err := ioutil.ReadFile("config.yaml") // Similar to Python's open function
+	if err != nil { // Similar to Python's if statement
+		log.Fatalf("error: %v", err) // Similar to Python's print function
 	}
-	err = yaml.Unmarshal([]byte(data), &config)
-	if err != nil {
-		log.Fatalf("error: %v", err)
+	err = yaml.Unmarshal([]byte(data), &config) // Similar to Python's yaml.load function
+	if err != nil { // Similar to Python's if statement
+		log.Fatalf("error: %v", err) // Similar to Python's print function
 	}
-	return config
+	return config // Similar to Python's return statement
 }
 
 func main() {
