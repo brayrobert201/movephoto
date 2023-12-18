@@ -5,6 +5,14 @@
 !*.mod
 !*.sum
 
+# Example file
+!*.example
+# Python scripts
+!*.py
+#
+# Requirements files
+!requirements.*
+
 # Go vendor directory
 /vendor/
 
@@ -14,5 +22,3 @@
 # Go coverage files
 *.out
 
-# Error files noted for aider diagnosis
-errors.txt
