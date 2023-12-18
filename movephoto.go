@@ -24,6 +24,16 @@ type Config struct {
 }
 
 func loadConfig() Config {
+	if _, err := os.Stat("config.yaml"); os.IsNotExist(err) {
+		fmt.Println("config.yaml does not exist. Copying config.yaml.example to config.yaml...")
+		err := os.Link("config.yaml.example", "config.yaml")
+		if err != nil {
+			log.Fatalf("error: %v", err)
+		}
+		fmt.Println("config.yaml created. Please edit it and run the program again.")
+		os.Exit(0)
+	}
+
 	config := Config{}
 	data, err := ioutil.ReadFile("config.yaml")
 	if err != nil {
