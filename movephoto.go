@@ -129,7 +129,7 @@ func move_photos(watch_dir string, destination_dir string, image_extensions []st
 	return nil
 }
 
-func move_videos(watch_dir string, destination_dir string) error {
+func move_videos(watch_dir string, destination_dir string, config Config) error {
 	files, err := ioutil.ReadDir(watch_dir)
 	if err != nil {
 		return err
