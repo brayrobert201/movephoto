@@ -21,7 +21,7 @@ import (
 
 type Config struct {
 	DefaultWatchDir       string   `yaml:"defaultWatchDir"`
-	RobertWatchDir        string   `yaml:"robertWatchDir"`
+	AdditionalWatchDirs   []string `yaml:"additionalWatchDirs"`
 	DefaultDestinationDir string   `yaml:"defaultDestinationDir"`
 	ImageExtensions       []string `yaml:"imageExtensions"`
 	VideoExtensions       []string `yaml:"videoExtensions"`
@@ -69,9 +69,11 @@ func main() {
 	os.Create(config.LockFilePath)
 	defer os.Remove(config.LockFilePath)
 
-	purge_unwanted(config.RobertWatchDir, config.BannedExtensions)
-	move_photos(config.RobertWatchDir, config.DefaultDestinationDir, config.ImageExtensions)
-	move_videos(config.RobertWatchDir, config.DefaultDestinationDir)
+	for _, watchDir := range config.AdditionalWatchDirs {
+		purge_unwanted(watchDir, config.BannedExtensions)
+		move_photos(watchDir, config.DefaultDestinationDir, config.ImageExtensions)
+		move_videos(watchDir, config.DefaultDestinationDir)
+	}
 }
 
 func purge_unwanted(watch_dir string, banned_extensions []string) error {
