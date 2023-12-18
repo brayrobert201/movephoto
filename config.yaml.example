@@ -1,8 +1,5 @@
-# The default directory to watch for new files
-defaultWatchDir: "/mnt/c/Users/bob/OneDrive/Pictures/Camera Roll"
-
-# Additional directories to watch for new files
-additionalWatchDirs:
+# Directories to watch for new files
+watchDirs:
   - "/mnt/c/Users/bob/OneDrive/Pictures/Camera Roll"
 
 # The default directory where the files should be moved

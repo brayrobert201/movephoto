@@ -18,8 +18,7 @@ import (
 // In Go, a struct is a collection of fields, similar to a class in Python.
 // Here, Config is a struct that holds configuration data.
 type Config struct {
-	DefaultWatchDir       string   `yaml:"defaultWatchDir"` // Similar to Python's class attribute
-	AdditionalWatchDirs   []string `yaml:"additionalWatchDirs"` // Similar to Python's list
+	WatchDirs   []string `yaml:"watchDirs"` // Similar to Python's list
 	DefaultDestinationDir string   `yaml:"defaultDestinationDir"` // Similar to Python's class attribute
 	ImageExtensions       []string `yaml:"imageExtensions"` // Similar to Python's list
 	VideoExtensions       []string `yaml:"videoExtensions"` // Similar to Python's list
@@ -85,7 +84,7 @@ func main() {
 	defer os.Remove(config.LockFilePath)
 
 	fmt.Println("Starting to move photos and videos...")
-	for _, watchDir := range config.AdditionalWatchDirs {
+	for _, watchDir := range config.WatchDirs {
 		purge_unwanted(watchDir, config.BannedExtensions)
 		move_photos(watchDir, config.DefaultDestinationDir, config.ImageExtensions)
 		move_videos(watchDir, config.DefaultDestinationDir, config.VideoExtensions)
