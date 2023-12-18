@@ -13,6 +13,7 @@ import (
 	"time" // Provides functionality for measuring and displaying time
 	"bufio" // Used for buffered I/O
 	"gopkg.in/yaml.v2" // Used for handling YAML files
+	"github.com/fsnotify/fsnotify" // Used for file system notifications
 )
 
 // In Go, a struct is a collection of fields, similar to a class in Python.
@@ -84,10 +85,21 @@ func main() {
 	defer os.Remove(config.LockFilePath)
 
 	fmt.Println("Starting to move photos and videos...")
-	for _, watchDir := range config.WatchDirs {
-		purge_unwanted(watchDir, config.BannedExtensions)
-		move_photos(watchDir, config.DefaultDestinationDir, config.ImageExtensions)
-		move_videos(watchDir, config.DefaultDestinationDir, config.VideoExtensions)
+	go func() {
+		for _, watchDir := range config.WatchDirs {
+			go watchDirectory(watchDir, config)
+		}
+	}()
+
+	// Fallback polling mechanism
+	ticker := time.NewTicker(30 * time.Second)
+	defer ticker.Stop()
+	for range ticker.C {
+		for _, watchDir := range config.WatchDirs {
+			purge_unwanted(watchDir, config.BannedExtensions)
+			move_photos(watchDir, config.DefaultDestinationDir, config.ImageExtensions)
+			move_videos(watchDir, config.DefaultDestinationDir, config.VideoExtensions)
+		}
 	}
 }
 
@@ -172,4 +184,62 @@ func move_videos(watch_dir string, destination_dir string, video_extensions []st
 			fmt.Sprintf("%d-%d-%d", year_taken, month_taken, day_taken),
 		)
 	})
+}
+// watchDirectory sets up a watcher on a directory and processes files as they are created.
+func watchDirectory(watchDir string, config Config) {
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer watcher.Close()
+
+	done := make(chan bool)
+	go func() {
+		for {
+			select {
+			case event, ok := <-watcher.Events:
+				if !ok {
+					return
+				}
+				if event.Op&fsnotify.Create == fsnotify.Create {
+					filePath := event.Name
+					fileInfo, err := os.Stat(filePath)
+					if err != nil {
+						log.Println(err)
+						continue
+					}
+					if fileInfo.IsDir() {
+						continue // Skip directories
+					}
+					ext := strings.ToLower(filepath.Ext(filePath))
+					if contains(config.ImageExtensions, ext) {
+						move_photos(watchDir, config.DefaultDestinationDir, config.ImageExtensions)
+					} else if contains(config.VideoExtensions, ext) {
+						move_videos(watchDir, config.DefaultDestinationDir, config.VideoExtensions)
+					}
+				}
+			case err, ok := <-watcher.Errors:
+				if !ok {
+					return
+				}
+				log.Println("error:", err)
+			}
+		}
+	}()
+
+	err = watcher.Add(watchDir)
+	if err != nil {
+		log.Fatal(err)
+	}
+	<-done
+}
+
+// contains checks if a slice contains a specific string.
+func contains(slice []string, item string) bool {
+	for _, s := range slice {
+		if s == item {
+			return true
+		}
+	}
+	return false
 }
