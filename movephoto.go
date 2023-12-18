@@ -29,30 +29,22 @@ type Config struct {
 
 // In Go, a function is defined using the "func" keyword, similar to Python's "def" keyword.
 // Here, loadConfig is a function that loads the configuration data from a YAML file.
-func loadConfig() Config { // Similar to Python's def keyword
-	// The if statement in Go is similar to Python's if statement.
-	if _, err := os.Stat("config.yaml"); os.IsNotExist(err) { // Similar to Python's if statement
-		fmt.Println("config.yaml does not exist. Copying config.yaml.example to config.yaml...")
-		// Error handling in Go is done using if statements, similar to Python's try-except blocks.
-		err := os.Link("config.yaml.example", "config.yaml") // Similar to Python's os.link function
-		if err != nil { // Similar to Python's if statement
-			log.Fatalf("error: %v", err) // Similar to Python's print function
-		}
-		fmt.Println("config.yaml created. Please edit it and run the program again.")
-		os.Exit(0) // Similar to Python's sys.exit function
+func loadConfig() Config {
+	if _, err := os.Stat(*configFilePath); os.IsNotExist(err) {
+		fmt.Printf("%s does not exist. Please create it and run the program again.\n", *configFilePath)
+		os.Exit(0)
 	}
 
-	// The := operator in Go is a shorthand for declaring and initializing a variable, similar to Python's = operator.
-	config := Config{} // Similar to Python's class instantiation
-	data, err := ioutil.ReadFile("config.yaml") // Similar to Python's open function
-	if err != nil { // Similar to Python's if statement
-		log.Fatalf("error: %v", err) // Similar to Python's print function
+	config := Config{}
+	data, err := ioutil.ReadFile(*configFilePath)
+	if err != nil {
+		log.Fatalf("error: %v", err)
 	}
-	err = yaml.Unmarshal([]byte(data), &config) // Similar to Python's yaml.load function
-	if err != nil { // Similar to Python's if statement
-		log.Fatalf("error: %v", err) // Similar to Python's print function
+	err = yaml.Unmarshal([]byte(data), &config)
+	if err != nil {
+		log.Fatalf("error: %v", err)
 	}
-	return config // Similar to Python's return statement
+	return config
 }
 
 var (
