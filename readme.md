@@ -36,3 +36,18 @@ To run this script every hour, you can set up a cron job. Here's how:
 Replace `/path/to/script/movephoto.go` with the actual path to the `movephoto.go` script. This will run the script at the start of every hour.
 
 Remember to save and close the file after making these changes.
+
+## Setting up a Go Build
+
+If you are a developer who hasn't used Go, you will need to set up a Go build. Here's how:
+
+1. Install Go on your machine. You can download it from the [official Go website](https://golang.org/dl/).
+2. Clone this repository to your local machine.
+3. Navigate to the directory containing the `movephoto.go` file.
+4. Run the command `go build`. This will compile the Go code into an executable file.
+
+## Resolving Missing go.sum Entry Error
+
+If you encounter an error message like `missing go.sum entry for module providing package gopkg.in/yaml.v2 (imported by movephoto); to add: go get movephoto`, it means that the `go.sum` file is missing an entry for the `gopkg.in/yaml.v2` package. This package is required by the `movephoto` module.
+
+To resolve this issue, run the command `go get movephoto` in your terminal. This command will update your `go.sum` file with the required dependencies for the `movephoto` module.
