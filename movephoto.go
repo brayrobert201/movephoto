@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"gopkg.in/yaml.v2"
 )
 
 
@@ -15,7 +16,30 @@ import (
 	"os"
 	"fmt"
 	"bufio"
+	"io/ioutil"
 )
+
+type Config struct {
+	DefaultWatchDir       string   `yaml:"defaultWatchDir"`
+	RobertWatchDir        string   `yaml:"robertWatchDir"`
+	DefaultDestinationDir string   `yaml:"defaultDestinationDir"`
+	ImageExtensions       []string `yaml:"imageExtensions"`
+	VideoExtensions       []string `yaml:"videoExtensions"`
+	BannedExtensions      []string `yaml:"bannedExtensions"`
+}
+
+func loadConfig() Config {
+	config := Config{}
+	data, err := ioutil.ReadFile("config.yaml")
+	if err != nil {
+		log.Fatalf("error: %v", err)
+	}
+	err = yaml.Unmarshal([]byte(data), &config)
+	if err != nil {
+		log.Fatalf("error: %v", err)
+	}
+	return config
+}
 
 func main() {
 	if _, err := os.Stat("config.yaml"); os.IsNotExist(err) {
@@ -26,9 +50,10 @@ func main() {
 			os.Link("config.yaml.example", "config.yaml")
 		}
 	}
-	purge_unwanted(robertWatchDir, bannedExtensions)
-	move_photos(robertWatchDir, defaultDestinationDir, imageExtensions)
-	move_videos(robertWatchDir, defaultDestinationDir)
+	config := loadConfig()
+	purge_unwanted(config.RobertWatchDir, config.BannedExtensions)
+	move_photos(config.RobertWatchDir, config.DefaultDestinationDir, config.ImageExtensions)
+	move_videos(config.RobertWatchDir, config.DefaultDestinationDir)
 }
 
 func purge_unwanted(watch_dir string, banned_extensions []string) error {
