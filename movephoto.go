@@ -56,9 +56,10 @@ func loadConfig() Config { // Similar to Python's def keyword
 }
 
 var (
-	pollingInterval = flag.Int("polling-interval", 30, "Polling interval in seconds for checking new files in the watch directories")
-	debug           = flag.Bool("debug", false, "Enable debug output")
-	watch           = flag.Bool("watch", false, "Enable regular scanning of the source directories")
+	pollingInterval  = flag.Int("polling-interval", 30, "Polling interval in seconds for checking new files in the watch directories")
+	debug            = flag.Bool("debug", false, "Enable debug output")
+	watch            = flag.Bool("watch", false, "Enable regular scanning of the source directories")
+	configFilePath   = flag.String("config", "/etc/movephoto_config.yml", "Path to the configuration file")
 )
 
 func main() {
