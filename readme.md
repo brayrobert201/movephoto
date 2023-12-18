@@ -4,7 +4,9 @@ This script is designed to organize photos and videos from specified directories
 
 ## Configuration
 
-The script is configured using a `config.yaml` file. An example configuration file `config.yaml.example` is provided. Copy this file to `config.yaml` and modify it to suit your needs.
+The script is configured using a `config.yaml` file. If a `config.yaml` file doesn't exist when the script is run, it will offer to copy the contents of `config.yaml.example` as a template. 
+
+An example configuration file `config.yaml.example` is provided. Copy this file to `config.yaml` and modify it to suit your needs. If `config.yaml` needed to be created, the script will exit with a message asking the user to review the contents of `config.yaml` before running the script again.
 
 The `config.yaml` file has the following fields:
 
