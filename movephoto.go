@@ -13,6 +13,7 @@ import (
 	"time" // Provides functionality for measuring and displaying time
 	"bufio" // Used for buffered I/O
 	"gopkg.in/yaml.v2" // Used for handling YAML files
+	"flag" // Used for parsing command-line flags
 	"github.com/fsnotify/fsnotify" // Used for file system notifications
 )
 
@@ -55,17 +56,26 @@ func loadConfig() Config { // Similar to Python's def keyword
 	return config // Similar to Python's return statement
 }
 
+var watch = flag.Bool("watch", false, "Watch for changes in the watch directories")
+
 func main() {
+	flag.Parse() // Parse the command-line flags
+
 	fmt.Println("Starting movephoto...")
-	if _, err := os.Stat("config.yaml"); os.IsNotExist(err) {
-		fmt.Println("config.yaml does not exist. Would you like to copy config.yaml.example to config.yaml? (y/n)")
-		reader := bufio.NewReader(os.Stdin)
-		response, _ := reader.ReadString('\n')
-		if response == "y\n" {
-			os.Link("config.yaml.example", "config.yaml")
-		}
-	}
 	config := loadConfig()
+
+	if *watch {
+		fmt.Println("Watching for changes in the watch directories...")
+		go func() {
+			for _, watchDir := range config.WatchDirs {
+				go watchDirectory(watchDir, config)
+			}
+		}()
+
+		// Keep the main goroutine alive
+		select {}
+	} else {
+		fmt.Println("Performing a single scan of the target directories...")
 
 	for {
 		if _, err := os.Stat(config.LockFilePath); os.IsNotExist(err) {
@@ -85,16 +95,7 @@ func main() {
 	defer os.Remove(config.LockFilePath)
 
 	fmt.Println("Starting to move photos and videos...")
-	go func() {
-		for _, watchDir := range config.WatchDirs {
-			go watchDirectory(watchDir, config)
-		}
-	}()
-
-	// Fallback polling mechanism
-	ticker := time.NewTicker(30 * time.Second)
-	defer ticker.Stop()
-	for range ticker.C {
+		// Perform a single scan of the watch directories
 		for _, watchDir := range config.WatchDirs {
 			purge_unwanted(watchDir, config.BannedExtensions)
 			move_photos(watchDir, config.DefaultDestinationDir, config.ImageExtensions)
