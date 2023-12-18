@@ -201,9 +201,10 @@ func move_videos(watch_dir string, destination_dir string, video_extensions []st
 }
 // watchDirectory sets up a watcher on a directory and processes files as they are created.
 func watchDirectory(watchDir string, config Config) {
+	log.Printf("[%s] Setting up watcher on directory: %s\n", currentTime(), watchDir)
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("[%s] Failed to create watcher: %v\n", currentTime(), err)
 	}
 	defer watcher.Close()
 
@@ -213,16 +214,19 @@ func watchDirectory(watchDir string, config Config) {
 			select {
 			case event, ok := <-watcher.Events:
 				if !ok {
+					log.Printf("[%s] Watcher event channel closed\n", currentTime())
 					return
 				}
+				log.Printf("[%s] Received watcher event: %v\n", currentTime(), event)
 				if event.Op&fsnotify.Create == fsnotify.Create {
 					filePath := event.Name
 					fileInfo, err := os.Stat(filePath)
 					if err != nil {
-						log.Println(err)
+						log.Printf("[%s] Error getting file info: %v\n", currentTime(), err)
 						continue
 					}
 					if fileInfo.IsDir() {
+						log.Printf("[%s] Directory created: %s, skipping\n", currentTime(), filePath)
 						continue // Skip directories
 					}
 					ext := strings.ToLower(filepath.Ext(filePath))
@@ -234,17 +238,19 @@ func watchDirectory(watchDir string, config Config) {
 				}
 			case err, ok := <-watcher.Errors:
 				if !ok {
+					log.Printf("[%s] Watcher error channel closed\n", currentTime())
 					return
 				}
-				log.Println("error:", err)
+				log.Printf("[%s] Watcher error: %v\n", currentTime(), err)
 			}
 		}
 	}()
 
 	err = watcher.Add(watchDir)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("[%s] Failed to add directory to watcher: %v\n", currentTime(), err)
 	}
+	log.Printf("[%s] Watcher added for directory: %s\n", currentTime(), watchDir)
 	<-done
 }
 
@@ -259,11 +265,12 @@ func contains(slice []string, item string) bool {
 }
 // pollDirectory periodically checks the directory for new files and processes them.
 func pollDirectory(watchDir string, config Config) {
+	log.Printf("[%s] Starting polling on directory: %s\n", currentTime(), watchDir)
 	ticker := time.NewTicker(time.Duration(*pollingInterval) * time.Second)
 	defer ticker.Stop()
 
 	for range ticker.C {
-		fmt.Printf("[%s] Polling for new files...\n", currentTime())
+		log.Printf("[%s] Polling for new files in directory: %s\n", currentTime(), watchDir)
 		move_photos(watchDir, config.DefaultDestinationDir, config.ImageExtensions)
 		move_videos(watchDir, config.DefaultDestinationDir, config.VideoExtensions)
 	}
