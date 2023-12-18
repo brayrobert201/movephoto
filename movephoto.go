@@ -59,6 +59,7 @@ func loadConfig() Config { // Similar to Python's def keyword
 var (
 	watch         = flag.Bool("watch", false, "Watch for changes in the watch directories")
 	pollingInterval = flag.Int("polling-interval", 30, "Polling interval in seconds for checking new files in the watch directories")
+	debug         = flag.Bool("debug", false, "Enable debug output")
 )
 
 func main() {
@@ -201,6 +202,9 @@ func move_videos(watch_dir string, destination_dir string, video_extensions []st
 }
 // watchDirectory sets up a watcher on a directory and processes files as they are created.
 func watchDirectory(watchDir string, config Config) {
+	if *debug {
+		log.Printf("[%s] Debug mode enabled\n", currentTime())
+	}
 	log.Printf("[%s] Setting up watcher on directory: %s\n", currentTime(), watchDir)
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
@@ -217,7 +221,9 @@ func watchDirectory(watchDir string, config Config) {
 					log.Printf("[%s] Watcher event channel closed\n", currentTime())
 					return
 				}
-				log.Printf("[%s] Received watcher event: %v\n", currentTime(), event)
+				if *debug {
+					log.Printf("[%s] Received watcher event: %v\n", currentTime(), event)
+				}
 				if event.Op&fsnotify.Create == fsnotify.Create {
 					filePath := event.Name
 					fileInfo, err := os.Stat(filePath)
@@ -241,7 +247,9 @@ func watchDirectory(watchDir string, config Config) {
 					log.Printf("[%s] Watcher error channel closed\n", currentTime())
 					return
 				}
-				log.Printf("[%s] Watcher error: %v\n", currentTime(), err)
+				if *debug {
+					log.Printf("[%s] Watcher error: %v\n", currentTime(), err)
+				}
 			}
 		}
 	}()
@@ -250,7 +258,9 @@ func watchDirectory(watchDir string, config Config) {
 	if err != nil {
 		log.Fatalf("[%s] Failed to add directory to watcher: %v\n", currentTime(), err)
 	}
-	log.Printf("[%s] Watcher added for directory: %s\n", currentTime(), watchDir)
+	if *debug {
+		log.Printf("[%s] Watcher added for directory: %s\n", currentTime(), watchDir)
+	}
 	<-done
 }
 
@@ -265,12 +275,17 @@ func contains(slice []string, item string) bool {
 }
 // pollDirectory periodically checks the directory for new files and processes them.
 func pollDirectory(watchDir string, config Config) {
+	if *debug {
+		log.Printf("[%s] Polling interval set to: %d seconds\n", currentTime(), *pollingInterval)
+	}
 	log.Printf("[%s] Starting polling on directory: %s\n", currentTime(), watchDir)
 	ticker := time.NewTicker(time.Duration(*pollingInterval) * time.Second)
 	defer ticker.Stop()
 
 	for range ticker.C {
-		log.Printf("[%s] Polling for new files in directory: %s\n", currentTime(), watchDir)
+		if *debug {
+			log.Printf("[%s] Polling for new files in directory: %s\n", currentTime(), watchDir)
+		}
 		move_photos(watchDir, config.DefaultDestinationDir, config.ImageExtensions)
 		move_videos(watchDir, config.DefaultDestinationDir, config.VideoExtensions)
 	}
