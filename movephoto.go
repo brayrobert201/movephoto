@@ -8,15 +8,9 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"gopkg.in/yaml.v2"
-)
-
-
-import (
-	"os"
-	"fmt"
+	"time"
 	"bufio"
-	"io/ioutil"
+	"gopkg.in/yaml.v2"
 )
 
 type Config struct {
@@ -142,7 +136,7 @@ func move_videos(watch_dir string, destination_dir string) error {
 	}
 
 	for _, file := range files {
-		for _, ext := range videoExtensions {
+		for _, ext := range config.VideoExtensions {
 			if strings.ToLower(filepath.Ext(file.Name())) == ext {
 				info, err := os.Stat(filepath.Join(watch_dir, file.Name()))
 				if err != nil {
