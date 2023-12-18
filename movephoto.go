@@ -101,7 +101,6 @@ func processFiles(config Config) {
 			fmt.Printf("[%s] Waiting for lock file to be removed...\n", currentTime())
 			time.Sleep(30 * time.Second)
 		}
-	}
 
 	os.Create(config.LockFilePath)
 	defer os.Remove(config.LockFilePath)
