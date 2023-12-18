@@ -10,11 +10,11 @@ Description=Movephoto Service
 After=network.target
 
 [Service]
-ExecStart=/usr/local/bin/movephoto --watch --config /etc/movephoto_config.yml
+ExecStart=/usr/local/bin/movephoto --watch --config=/etc/movephoto_config.yml
 Restart=always
 RestartSec=5
-StandardOutput=syslog
-StandardError=syslog
+# StandardOutput=syslog
+# StandardError=syslog
 SyslogIdentifier=movephoto
 
 [Install]
@@ -29,7 +29,7 @@ sudo systemctl enable movephoto.service
 
 # Copy the movephoto executable and config.yaml.example to /usr/local/bin/
 sudo cp ./movephoto /usr/local/bin/movephoto
-sudo cp ./config.yaml.example /usr/local/bin/config.yaml
+sudo cp ./config.yaml.example /etc/movephoto_config.yml
 sudo chmod +x /usr/local/bin/movephoto
 
 # Start the movephoto service
