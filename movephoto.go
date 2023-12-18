@@ -66,7 +66,7 @@ func main() {
 	for _, watchDir := range config.AdditionalWatchDirs {
 		purge_unwanted(watchDir, config.BannedExtensions)
 		move_photos(watchDir, config.DefaultDestinationDir, config.ImageExtensions)
-		move_videos(watchDir, config.DefaultDestinationDir)
+		move_videos(watchDir, config.DefaultDestinationDir, config)
 	}
 }
 
