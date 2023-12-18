@@ -25,11 +25,15 @@ sudo systemctl daemon-reload
 # Enable the movephoto service to start on boot
 sudo systemctl enable movephoto.service
 
-# Copy the movephoto executable and config.yaml.example to /usr/local/bin/
+# Copy the movephoto executable to /usr/local/bin/
 go build
 sudo cp ./movephoto /usr/local/bin/movephoto
-sudo cp ./config.yaml.example /etc/movephoto_config.yaml
 sudo chmod +x /usr/local/bin/movephoto
+
+# Check if /etc/movephoto_config.yaml exists, if not copy the config.yaml.example to that location
+if [ ! -f /etc/movephoto_config.yaml ]; then
+    sudo cp ./config.yaml.example /etc/movephoto_config.yaml
+fi
 
 # Start the movephoto service
 sudo systemctl start movephoto.service
