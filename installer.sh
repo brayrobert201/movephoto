@@ -10,7 +10,7 @@ Description=Movephoto Service
 After=network.target
 
 [Service]
-ExecStart=/usr/local/bin/movephoto --watch
+ExecStart=/usr/local/bin/movephoto --watch --config /etc/movephoto_config.yml
 Restart=always
 RestartSec=5
 StandardOutput=syslog
