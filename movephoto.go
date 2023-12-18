@@ -11,7 +11,7 @@ import (
 	"path/filepath" // Provides utility functions for manipulating filename paths
 	"strings" // Provides string manipulation functions
 	"time" // Provides functionality for measuring and displaying time
-	"bufio" // Used for buffered I/O
+	// "bufio" // Used for buffered I/O
 	"gopkg.in/yaml.v2" // Used for handling YAML files
 	"flag" // Used for parsing command-line flags
 	"github.com/fsnotify/fsnotify" // Used for file system notifications
