@@ -64,17 +64,17 @@ var (
 func main() {
 	flag.Parse() // Parse the command-line flags
 
-	fmt.Println("Starting movephoto...")
+	fmt.Printf("[%s] Starting movephoto...\n", currentTime())
 	config := loadConfig()
 
 	if *watch {
-		fmt.Println("Watching for changes in the watch directories...")
+		fmt.Printf("[%s] Watching for changes in the watch directories...\n", currentTime())
 		for _, watchDir := range config.WatchDirs {
 			if isNetworkPath(watchDir) {
-				fmt.Printf("Using polling for network path: %s\n", watchDir)
+				fmt.Printf("[%s] Using polling for network path: %s\n", currentTime(), watchDir)
 				go pollDirectory(watchDir, config)
 			} else {
-				fmt.Printf("Using fsnotify for path: %s\n", watchDir)
+				fmt.Printf("[%s] Using fsnotify for path: %s\n", currentTime(), watchDir)
 				go watchDirectory(watchDir, config)
 			}
 		}
@@ -82,7 +82,7 @@ func main() {
 		// Keep the main goroutine alive
 		select {}
 	} else {
-		fmt.Println("Performing a single scan of the target directories...")
+		fmt.Printf("[%s] Performing a single scan of the target directories...\n", currentTime())
 
 	for {
 		if _, err := os.Stat(config.LockFilePath); os.IsNotExist(err) {
@@ -93,7 +93,7 @@ func main() {
 				os.Remove(config.LockFilePath)
 				break
 			}
-			fmt.Println("Waiting for lock file to be removed...")
+			fmt.Printf("[%s] Waiting for lock file to be removed...\n", currentTime())
 			time.Sleep(30 * time.Second)
 		}
 	}
@@ -101,7 +101,7 @@ func main() {
 	os.Create(config.LockFilePath)
 	defer os.Remove(config.LockFilePath)
 
-	fmt.Println("Starting to move photos and videos...")
+	fmt.Printf("[%s] Starting to move photos and videos...\n", currentTime())
 		// Perform a single scan of the watch directories
 		for _, watchDir := range config.WatchDirs {
 			purge_unwanted(watchDir, config.BannedExtensions)
@@ -142,7 +142,13 @@ func move_files(watch_dir string, destination_dir string, extensions []string, g
 					os.MkdirAll(full_destination_dir, os.ModePerm)
 				}
 				if _, err := os.Stat(full_destination); os.IsNotExist(err) {
-					os.Rename(filepath.Join(watch_dir, file.Name()), full_destination)
+					sourcePath := filepath.Join(watch_dir, file.Name())
+					err := os.Rename(sourcePath, full_destination)
+					if err != nil {
+						log.Printf("[%s] Failed to move file: %s\n", currentTime(), err)
+					} else {
+						log.Printf("[%s] Moved file: %s to %s\n", currentTime(), sourcePath, full_destination)
+					}
 				}
 			}
 		}
@@ -257,7 +263,7 @@ func pollDirectory(watchDir string, config Config) {
 	defer ticker.Stop()
 
 	for range ticker.C {
-		fmt.Println("Polling for new files...")
+		fmt.Printf("[%s] Polling for new files...\n", currentTime())
 		move_photos(watchDir, config.DefaultDestinationDir, config.ImageExtensions)
 		move_videos(watchDir, config.DefaultDestinationDir, config.VideoExtensions)
 	}
@@ -265,4 +271,8 @@ func pollDirectory(watchDir string, config Config) {
 // isNetworkPath checks if the given path is a network path.
 func isNetworkPath(path string) bool {
 	return strings.HasPrefix(path, "//") || strings.HasPrefix(path, `\\`)
+}
+// currentTime returns the current time as a formatted string with timezone.
+func currentTime() string {
+	return time.Now().Format("2006-01-02 15:04:05 MST")
 }
