@@ -14,7 +14,6 @@ import (
 	// "bufio" // Used for buffered I/O
 	"gopkg.in/yaml.v2" // Used for handling YAML files
 	"flag" // Used for parsing command-line flags
-	"github.com/fsnotify/fsnotify" // Used for file system notifications
 )
 
 // In Go, a struct is a collection of fields, similar to a class in Python.
