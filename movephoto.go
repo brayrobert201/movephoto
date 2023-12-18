@@ -99,36 +99,16 @@ func purge_unwanted(watch_dir string, banned_extensions []string) error {
 	return nil
 }
 
-func move_photos(watch_dir string, destination_dir string, image_extensions []string) error {
+func move_files(watch_dir string, destination_dir string, extensions []string, get_destination_dir func(file os.FileInfo) string) error {
 	files, err := ioutil.ReadDir(watch_dir)
 	if err != nil {
 		return err
 	}
 
 	for _, file := range files {
-		for _, ext := range image_extensions {
+		for _, ext := range extensions {
 			if strings.ToLower(filepath.Ext(file.Name())) == ext {
-				imgFile, err := os.Open(filepath.Join(watch_dir, file.Name()))
-				if err != nil {
-					log.Fatal(err)
-				}
-				_, err = jpeg.DecodeConfig(imgFile)
-				if err != nil {
-					log.Fatal(err)
-				}
-				info, err := imgFile.Stat()
-				if err != nil {
-					log.Fatal(err)
-				}
-				date_taken := info.ModTime()
-				year_taken, month_taken, day_taken := date_taken.Date()
-				month_name := month_taken.String()
-				full_destination_dir := filepath.Join(
-					destination_dir,
-					fmt.Sprintf("%d", year_taken),
-					fmt.Sprintf("%d - %s", month_taken, month_name),
-					fmt.Sprintf("%d-%d-%d", year_taken, month_taken, day_taken),
-				)
+				full_destination_dir := get_destination_dir(file)
 				full_destination := filepath.Join(full_destination_dir, file.Name())
 				if _, err := os.Stat(full_destination_dir); os.IsNotExist(err) {
 					os.MkdirAll(full_destination_dir, os.ModePerm)
@@ -142,38 +122,46 @@ func move_photos(watch_dir string, destination_dir string, image_extensions []st
 	return nil
 }
 
-func move_videos(watch_dir string, destination_dir string, config Config) error {
-	files, err := ioutil.ReadDir(watch_dir)
-	if err != nil {
-		return err
-	}
-
-	for _, file := range files {
-		for _, ext := range config.VideoExtensions {
-			if strings.ToLower(filepath.Ext(file.Name())) == ext {
-				info, err := os.Stat(filepath.Join(watch_dir, file.Name()))
-				if err != nil {
-					log.Fatal(err)
-				}
-				date_taken := info.ModTime()
-				year_taken, month_taken, day_taken := date_taken.Date()
-				month_name := month_taken.String()
-				full_destination_dir := filepath.Join(
-					destination_dir,
-					fmt.Sprintf("%d", year_taken),
-					fmt.Sprintf("%d - %s", month_taken, month_name),
-					fmt.Sprintf("%d-%d-%d", year_taken, month_taken, day_taken),
-				)
-				full_destination := filepath.Join(full_destination_dir, file.Name())
-				if _, err := os.Stat(full_destination_dir); os.IsNotExist(err) {
-					os.MkdirAll(full_destination_dir, os.ModePerm)
-				}
-				if _, err := os.Stat(full_destination); os.IsNotExist(err) {
-					os.Rename(filepath.Join(watch_dir, file.Name()), full_destination)
-				}
-			}
+func move_photos(watch_dir string, destination_dir string, image_extensions []string) error {
+	return move_files(watch_dir, destination_dir, image_extensions, func(file os.FileInfo) string {
+		imgFile, err := os.Open(filepath.Join(watch_dir, file.Name()))
+		if err != nil {
+			log.Fatal(err)
 		}
-	}
-	return nil
+		_, err = jpeg.DecodeConfig(imgFile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		info, err := imgFile.Stat()
+		if err != nil {
+			log.Fatal(err)
+		}
+		date_taken := info.ModTime()
+		year_taken, month_taken, day_taken := date_taken.Date()
+		month_name := month_taken.String()
+		return filepath.Join(
+			destination_dir,
+			fmt.Sprintf("%d", year_taken),
+			fmt.Sprintf("%d - %s", month_taken, month_name),
+			fmt.Sprintf("%d-%d-%d", year_taken, month_taken, day_taken),
+		)
+	})
+}
 
+func move_videos(watch_dir string, destination_dir string, video_extensions []string) error {
+	return move_files(watch_dir, destination_dir, video_extensions, func(file os.FileInfo) string {
+		info, err := os.Stat(filepath.Join(watch_dir, file.Name()))
+		if err != nil {
+			log.Fatal(err)
+		}
+		date_taken := info.ModTime()
+		year_taken, month_taken, day_taken := date_taken.Date()
+		month_name := month_taken.String()
+		return filepath.Join(
+			destination_dir,
+			fmt.Sprintf("%d", year_taken),
+			fmt.Sprintf("%d - %s", month_taken, month_name),
+			fmt.Sprintf("%d-%d-%d", year_taken, month_taken, day_taken),
+		)
+	})
 }
