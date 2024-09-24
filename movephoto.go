@@ -3,28 +3,30 @@ package main
 // Importing packages in Go is similar to Python's import statements.
 // For example, "fmt" is similar to Python's built-in "print" function.
 import (
-	"fmt" // Similar to Python's print function
-	"image/jpeg" // Used for handling JPEG images
-	"io/ioutil" // Provides I/O utility functions
-	"log" // Used for logging
-	"os" // Provides a platform-independent interface to operating system functionality
+	"fmt"           // Similar to Python's print function
+	"image/jpeg"    // Used for handling JPEG images
+	"io/ioutil"     // Provides I/O utility functions
+	"log"           // Used for logging
+	"os"            // Provides a platform-independent interface to operating system functionality
 	"path/filepath" // Provides utility functions for manipulating filename paths
-	"strings" // Provides string manipulation functions
-	"time" // Provides functionality for measuring and displaying time
+	"strings"       // Provides string manipulation functions
+	"time"          // Provides functionality for measuring and displaying time
+
 	// "bufio" // Used for buffered I/O
-	"gopkg.in/yaml.v2" // Used for handling YAML files
 	"flag" // Used for parsing command-line flags
+
+	"gopkg.in/yaml.v2" // Used for handling YAML files
 )
 
 // In Go, a struct is a collection of fields, similar to a class in Python.
 // Here, Config is a struct that holds configuration data.
 type Config struct {
-	WatchDirs   []string `yaml:"watchDirs"` // Similar to Python's list
+	WatchDirs             []string `yaml:"watchDirs"`             // Similar to Python's list
 	DefaultDestinationDir string   `yaml:"defaultDestinationDir"` // Similar to Python's class attribute
-	ImageExtensions       []string `yaml:"imageExtensions"` // Similar to Python's list
-	VideoExtensions       []string `yaml:"videoExtensions"` // Similar to Python's list
-	BannedExtensions      []string `yaml:"bannedExtensions"` // Similar to Python's list
-	LockFilePath          string   `yaml:"lockFilePath"` // Similar to Python's class attribute
+	ImageExtensions       []string `yaml:"imageExtensions"`       // Similar to Python's list
+	VideoExtensions       []string `yaml:"videoExtensions"`       // Similar to Python's list
+	BannedExtensions      []string `yaml:"bannedExtensions"`      // Similar to Python's list
+	LockFilePath          string   `yaml:"lockFilePath"`          // Similar to Python's class attribute
 }
 
 // In Go, a function is defined using the "func" keyword, similar to Python's "def" keyword.
@@ -48,10 +50,10 @@ func loadConfig() Config {
 }
 
 var (
-	pollingInterval  = flag.Int("polling-interval", 30, "Polling interval in seconds for checking new files in the watch directories")
-	debug            = flag.Bool("debug", false, "Enable debug output")
-	watch            = flag.Bool("watch", false, "Enable regular scanning of the source directories")
-	configFilePath   = flag.String("config", "/etc/movephoto_config.yml", "Path to the configuration file")
+	pollingInterval = flag.Int("polling-interval", 30, "Polling interval in seconds for checking new files in the watch directories")
+	debug           = flag.Bool("debug", false, "Enable debug output")
+	watch           = flag.Bool("watch", false, "Enable regular scanning of the source directories")
+	configFilePath  = flag.String("config", "/etc/movephoto_config.yml", "Path to the configuration file")
 )
 
 func main() {
@@ -104,10 +106,10 @@ func processFiles(config Config) {
 			time.Sleep(30 * time.Second)
 		}
 
-	os.Create(config.LockFilePath)
-	defer os.Remove(config.LockFilePath)
+		os.Create(config.LockFilePath)
+		defer os.Remove(config.LockFilePath)
 
-	fmt.Printf("[%s] Starting to move photos and videos...\n", currentTime())
+		fmt.Printf("[%s] Starting to move photos and videos...\n", currentTime())
 		// Perform a single scan of the watch directories
 		for _, watchDir := range config.WatchDirs {
 			purge_unwanted(watchDir, config.BannedExtensions)
@@ -200,8 +202,8 @@ func move_videos(watch_dir string, destination_dir string, video_extensions []st
 		return filepath.Join(
 			destination_dir,
 			fmt.Sprintf("%d", year_taken),
-			fmt.Sprintf("%d - %s", month_taken, month_name),
-			fmt.Sprintf("%d-%02d-%d", year_taken, month_taken, day_taken),
+			fmt.Sprintf("%02d - %s", month_taken, month_name),
+			fmt.Sprintf("%04d-%02d-%02d", year_taken, int(month_taken), day_taken),
 		)
 	})
 }
@@ -215,6 +217,7 @@ func contains(slice []string, item string) bool {
 	}
 	return false
 }
+
 // pollDirectory periodically checks the directory for new files and processes them.
 func pollDirectory(watchDir string, config Config) {
 	if *debug {
@@ -232,10 +235,12 @@ func pollDirectory(watchDir string, config Config) {
 		move_videos(watchDir, config.DefaultDestinationDir, config.VideoExtensions)
 	}
 }
+
 // isNetworkPath checks if the given path is a network path.
 func isNetworkPath(path string) bool {
 	return strings.HasPrefix(path, "//") || strings.HasPrefix(path, `\\`)
 }
+
 // currentTime returns the current time as a formatted string with timezone.
 func currentTime() string {
 	return time.Now().Format("2006-01-02 15:04:05 MST")
