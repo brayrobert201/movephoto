@@ -140,7 +140,7 @@ func purge_unwanted(watch_dir string, banned_extensions []string) error {
 	return nil
 }
 
-func move_files(watch_dir string, destination_dir string, extensions []string, get_destination_dir func(filePath string, file os.FileInfo) string) error {
+func move_files(watch_dir string, destination_dir string, extensions []string, get_destination_dir func(filePath string, file os.FileInfo) (string, bool)) error {
 	files, err := os.ReadDir(watch_dir)
 	if err != nil {
 		return err
@@ -169,7 +169,12 @@ func move_files(watch_dir string, destination_dir string, extensions []string, g
 		}
 
 		sourcePath := filepath.Join(watch_dir, info.Name())
-		full_destination_dir := get_destination_dir(sourcePath, info)
+		full_destination_dir, shouldProcess := get_destination_dir(sourcePath, info)
+		if !shouldProcess {
+			log.Printf("[%s] Skipping file: %s (no valid date found)\n", currentTime(), sourcePath)
+			continue
+		}
+
 		full_destination := filepath.Join(full_destination_dir, info.Name())
 		if _, err := os.Stat(full_destination_dir); os.IsNotExist(err) {
 			os.MkdirAll(full_destination_dir, os.ModePerm)
@@ -192,7 +197,7 @@ func move_files(watch_dir string, destination_dir string, extensions []string, g
 	return nil
 }
 
-func copy_files(watch_dir string, destination_dir string, extensions []string, includePrefix []string, get_destination_dir func(filePath string, file os.FileInfo) string) error {
+func copy_files(watch_dir string, destination_dir string, extensions []string, includePrefix []string, get_destination_dir func(filePath string, file os.FileInfo) (string, bool)) error {
 	files, err := os.ReadDir(watch_dir)
 	if err != nil {
 		return err
@@ -232,7 +237,12 @@ func copy_files(watch_dir string, destination_dir string, extensions []string, i
 			continue
 		}
 
-		full_destination_dir := get_destination_dir(filePath, info)
+		full_destination_dir, shouldProcess := get_destination_dir(filePath, info)
+		if !shouldProcess {
+			log.Printf("[%s] Skipping file: %s (no valid date found)\n", currentTime(), filePath)
+			continue
+		}
+
 		full_destination := filepath.Join(full_destination_dir, info.Name())
 		if _, err := os.Stat(full_destination_dir); os.IsNotExist(err) {
 			os.MkdirAll(full_destination_dir, os.ModePerm)
@@ -258,22 +268,16 @@ func copy_files(watch_dir string, destination_dir string, extensions []string, i
 }
 
 func move_photos(watch_dir string, destination_dir string, image_extensions []string) error {
-	return move_files(watch_dir, destination_dir, image_extensions, func(filePath string, file os.FileInfo) string {
-		var date_taken time.Time
-		var err error
-
-		// Attempt to get date from EXIF data
-		date_taken, err = getPhotoTimestamp(filePath)
+	return move_files(watch_dir, destination_dir, image_extensions, func(filePath string, file os.FileInfo) (string, bool) {
+		date_taken, err := getPhotoTimestamp(filePath)
 		if err != nil {
-			// If EXIF data is not available, attempt to parse date from filename
+			// Attempt to parse date from filename
 			date_taken, err = parseDateFromFilename(file.Name())
 			if err != nil {
-				// Skip the file if neither EXIF data nor filename date is available
-				fmt.Printf("Skipping file %s: no valid date found\n", filePath)
-				return ""
+				log.Printf("[%s] Skipping photo %s: no valid date found\n", currentTime(), filePath)
+				return "", false
 			}
 		}
-
 		year_taken, month_taken, day_taken := date_taken.Date()
 		month_name := month_taken.String()
 		return filepath.Join(
@@ -281,31 +285,17 @@ func move_photos(watch_dir string, destination_dir string, image_extensions []st
 			fmt.Sprintf("%d", year_taken),
 			fmt.Sprintf("%02d - %s", month_taken, month_name),
 			fmt.Sprintf("%04d-%02d-%02d", year_taken, int(month_taken), day_taken),
-		)
+		), true
 	})
 }
 
 func move_videos(watch_dir string, destination_dir string, video_extensions []string) error {
-	// For videos, we'll continue to use the file modification time
-	return move_files(watch_dir, destination_dir, video_extensions, func(filePath string, file os.FileInfo) string {
-		date_taken := file.ModTime()
-		year_taken, month_taken, day_taken := date_taken.Date()
-		month_name := month_taken.String()
-		return filepath.Join(
-			destination_dir,
-			fmt.Sprintf("%d", year_taken),
-			fmt.Sprintf("%02d - %s", month_taken, month_name),
-			fmt.Sprintf("%04d-%02d-%02d", year_taken, int(month_taken), day_taken),
-		)
-	})
-}
-
-func copy_photos(watch_dir string, destination_dir string, image_extensions []string, includePrefix []string) error {
-	return copy_files(watch_dir, destination_dir, image_extensions, includePrefix, func(filePath string, file os.FileInfo) string {
-		date_taken, err := getPhotoTimestamp(filePath)
+	return move_files(watch_dir, destination_dir, video_extensions, func(filePath string, file os.FileInfo) (string, bool) {
+		date_taken, err := getVideoTimestamp(filePath)
 		if err != nil {
-			// Fallback to file modification time
-			date_taken = file.ModTime()
+			// Log a notification and skip the video
+			log.Printf("[%s] Skipping video %s: %v\n", currentTime(), filePath, err)
+			return "", false
 		}
 		year_taken, month_taken, day_taken := date_taken.Date()
 		month_name := month_taken.String()
@@ -314,14 +304,21 @@ func copy_photos(watch_dir string, destination_dir string, image_extensions []st
 			fmt.Sprintf("%d", year_taken),
 			fmt.Sprintf("%02d - %s", month_taken, month_name),
 			fmt.Sprintf("%04d-%02d-%02d", year_taken, int(month_taken), day_taken),
-		)
+		), true
 	})
 }
 
-func copy_videos(watch_dir string, destination_dir string, video_extensions []string, includePrefix []string) error {
-	// For videos, we'll continue to use the file modification time
-	return copy_files(watch_dir, destination_dir, video_extensions, includePrefix, func(filePath string, file os.FileInfo) string {
-		date_taken := file.ModTime()
+func copy_photos(watch_dir string, destination_dir string, image_extensions []string, includePrefix []string) error {
+	return copy_files(watch_dir, destination_dir, image_extensions, includePrefix, func(filePath string, file os.FileInfo) (string, bool) {
+		date_taken, err := getPhotoTimestamp(filePath)
+		if err != nil {
+			// Attempt to parse date from filename
+			date_taken, err = parseDateFromFilename(file.Name())
+			if err != nil {
+				log.Printf("[%s] Skipping photo %s: no valid date found\n", currentTime(), filePath)
+				return "", false
+			}
+		}
 		year_taken, month_taken, day_taken := date_taken.Date()
 		month_name := month_taken.String()
 		return filepath.Join(
@@ -329,7 +326,26 @@ func copy_videos(watch_dir string, destination_dir string, video_extensions []st
 			fmt.Sprintf("%d", year_taken),
 			fmt.Sprintf("%02d - %s", month_taken, month_name),
 			fmt.Sprintf("%04d-%02d-%02d", year_taken, int(month_taken), day_taken),
-		)
+		), true
+	})
+}
+
+func copy_videos(watch_dir string, destination_dir string, video_extensions []string, includePrefix []string) error {
+	return copy_files(watch_dir, destination_dir, video_extensions, includePrefix, func(filePath string, file os.FileInfo) (string, bool) {
+		date_taken, err := getVideoTimestamp(filePath)
+		if err != nil {
+			// Log a notification and skip the video
+			log.Printf("[%s] Skipping video %s: %v\n", currentTime(), filePath, err)
+			return "", false
+		}
+		year_taken, month_taken, day_taken := date_taken.Date()
+		month_name := month_taken.String()
+		return filepath.Join(
+			destination_dir,
+			fmt.Sprintf("%d", year_taken),
+			fmt.Sprintf("%02d - %s", month_taken, month_name),
+			fmt.Sprintf("%04d-%02d-%02d", year_taken, int(month_taken), day_taken),
+		), true
 	})
 }
 
@@ -351,9 +367,20 @@ func getPhotoTimestamp(filePath string) (time.Time, error) {
 		return time.Time{}, fi.Err
 	}
 
-	dateTimeOriginal, ok := fi.Fields["DateTimeOriginal"].(string)
-	if !ok {
-		return time.Time{}, fmt.Errorf("DateTimeOriginal not found in EXIF data")
+	// Try to get DateTimeOriginal, CreateDate, ModifyDate, or DateTimeDigitized
+	var dateStr string
+	var ok bool
+	dateTags := []string{"DateTimeOriginal", "CreateDate", "ModifyDate", "DateTimeDigitized"}
+
+	for _, tag := range dateTags {
+		dateStr, ok = fi.Fields[tag].(string)
+		if ok && dateStr != "" {
+			break
+		}
+	}
+
+	if !ok || dateStr == "" {
+		return time.Time{}, fmt.Errorf("No valid date tag found in EXIF data")
 	}
 
 	dateFormats := []string{
@@ -365,14 +392,73 @@ func getPhotoTimestamp(filePath string) (time.Time, error) {
 	var parsedTime time.Time
 	var parseErr error
 	for _, format := range dateFormats {
-		parsedTime, parseErr = time.Parse(format, dateTimeOriginal)
+		parsedTime, parseErr = time.Parse(format, dateStr)
 		if parseErr == nil {
 			break
 		}
 	}
 
 	if parseErr != nil {
-		return time.Time{}, fmt.Errorf("Error parsing DateTimeOriginal: %v", parseErr)
+		return time.Time{}, fmt.Errorf("Error parsing date: %v", parseErr)
+	}
+
+	return parsedTime, nil
+}
+
+// getVideoTimestamp extracts the MediaCreateDate or CreateDate from the video's metadata using ExifTool
+func getVideoTimestamp(filePath string) (time.Time, error) {
+	et, err := exiftool.NewExiftool()
+	if err != nil {
+		return time.Time{}, fmt.Errorf("Error when creating Exiftool: %v", err)
+	}
+	defer et.Close()
+
+	fileInfos := et.ExtractMetadata(filePath)
+	if len(fileInfos) == 0 {
+		return time.Time{}, fmt.Errorf("No metadata extracted for file: %s", filePath)
+	}
+
+	fi := fileInfos[0]
+	if fi.Err != nil {
+		return time.Time{}, fi.Err
+	}
+
+	// Try to get MediaCreateDate, CreateDate, or ModifyDate
+	var dateStr string
+	var ok bool
+	dateTags := []string{"MediaCreateDate", "CreateDate", "ModifyDate"}
+
+	for _, tag := range dateTags {
+		dateStr, ok = fi.Fields[tag].(string)
+		if ok {
+			break
+		}
+	}
+
+	if !ok {
+		return time.Time{}, fmt.Errorf("No valid date tag found in metadata")
+	}
+
+	// Remove timezone information in format "+00:00" if present
+	dateStr = strings.Replace(dateStr, "+00:00", "", 1)
+
+	dateFormats := []string{
+		"2006:01:02 15:04:05",
+		"2006:01:02 15:04:05-07:00",
+		"2006:01:02 15:04:05Z07:00",
+	}
+
+	var parsedTime time.Time
+	var parseErr error
+	for _, format := range dateFormats {
+		parsedTime, parseErr = time.Parse(format, dateStr)
+		if parseErr == nil {
+			break
+		}
+	}
+
+	if parseErr != nil {
+		return time.Time{}, fmt.Errorf("Error parsing date: %v", parseErr)
 	}
 
 	return parsedTime, nil
